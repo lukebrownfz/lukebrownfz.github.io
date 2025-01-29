@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Compliance Analysis</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Use custom styles.css -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome for icons -->
+    <style>
+        body {
+            font-family: "Open Sans", Arial, sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #333;
+                color: #f7f7f7;
+            }
+
+            form, #results {
+                background-color: #222;
+                border-top: 6px solid #007bc7;
+                box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+            }
+
+            label {
+                color: #ff9f00;
+            }
+
+            input[type="date"],
+            input[type="file"] {
+                background-color: #555;
+                color: #f7f7f7;
+                border: 1px solid #777;
+            }
+
+            input[type="date"]:focus,
+            input[type="file"]:focus {
+                border-color: #ff9f00;
+            }
+
+            button[type="submit"] {
+                background-color: #ff9f00;
+                color: #333;
+            }
+
+            button[type="submit"]:hover {
+                background-color: #e68900;
+            }
+
+            th, td {
+                background-color: #444;
+                color: #f7f7f7;
+            }
+
+            table, th, td {
+                border: 1px solid #555;
+            }
+
+            tr:nth-child(even) {
+                background-color: #555;
+            }
+
+            #analysis-notes ul li {
+    color: #333;
+}
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            background-color: #083464; /* Flydubai blue */
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        form {
+            width: 50%;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            border-top: 6px solid #007bc7;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-top: 15px;
+            color: #007bc7;
+            font-size: 16px;
+        }
+
+        input[type="date"],
+        input[type="file"] {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input[type="date"]:focus,
+        input[type="file"]:focus {
+            border-color: #007bc7;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background-color: #ff9f00; /* Flydubai orange */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #e68900;
+        }
+
+        #results {
+            width: 80%;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-top: 6px solid #007bc7;
+        }
+
+        #results h2 {
+            margin-top: 0;
+            color: #007bc7;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 24px;
+        }
+
+        p {
+            font-size: 18px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        p span {
+            font-weight: bold;
+            color: #007bc7;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            font-size: 16px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #083464;
+            color: #fff;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f7f7f7;
+        }
+
+        canvas {
+            margin-top: 40px;
+            width: 100%;
+            height: auto;
+        }
+
+        .chart-container {
+            position: relative;
+            margin: 0 auto;
+            width: 90%;
+            max-width: 100%;
+        }
+
+        .status-icon {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 20px; background-color: #083464; padding: 20px;">
+        <img src="https://www.flydubai.com/v2/_next/static/media/iconF.661174c2.svg" alt="Flydubai Logo" style="height: 80px;">
+    </div>
+
+    <h1 style="margin-top: 0;">Maintenance Experience Compliance Analyzer</h1>
+
+    <form id="upload-form">
+        <label for="start-date"><i class="fas fa-calendar-alt status-icon"></i> Enter Employment Start Date:</label>
+        <input type="date" id="start-date" required>
+        <label for="csv-file"><i class="fas fa-file-upload status-icon"></i> Upload CSV File:</label>
+        <input type="file" id="csv-file" accept=".csv" required>
+        <button type="submit"><i class="fas fa-chart-bar status-icon"></i> Analyze</button>
+    </form>
+
+    <div id="results" style="display:none;">
+        <h2><i class="fas fa-chart-pie status-icon"></i> Analysis Results</h2>
+        <p id="six-month-check"></p>
+        <p id="maintenance-days-check"></p>
+        <p id="tasks-check"></p>
+        <p id="gaps-check"></p>
+
+        <div id="analysis-notes">
+            <h2><i class="fas fa-info-circle status-icon"></i> Informational Notes</h2>
+            <ul>
+                <li>The analysis considers only tasks that are properly documented with valid dates and ATA chapters.</li>
+                <li>To meet the 6-month employment condition, your employment period should cover at least 6 months from the start date provided.</li>
+                <li>The 100 days of maintenance condition is based on having at least 4 tasks on different dates over 100 days.</li>
+                <li>The 180 tasks condition requires tasks to be distributed over different dates within a 2-year period from the start of employment.</li>
+                <li>Any gaps greater than 30 days between tasks are highlighted to ensure continuous experience without prolonged inactivity.</li>
+            </ul>
+        </div>
+
+        <h2><i class="fas fa-list status-icon"></i> ATA Chapter Summary</h2>
+        <table id="ata-table">
+            <thead>
+                <tr>
+                    <th>ATA Chapter</th>
+                    <th>Task Count</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <br><br>
+        <h2><i class="fas fa-calendar-alt status-icon"></i> Tasks per Month</h2>
+        <div class="chart-container">
+            <canvas id="tasks-chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const startDate = new Date(document.getElementById('start-date').value);
+            const currentDate = new Date();
+            const sixMonthsAgo = new Date(currentDate);
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+            if (startDate > currentDate) {
+                alert('Start date cannot be in the future.');
+                return;
+            }
+
+            if (startDate > sixMonthsAgo) {
+                alert('Start date must be at least 6 months older than the current date.');
+                return;
+            }
+
+            const file = document.getElementById('csv-file').files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                const data = event.target.result;
+                analyzeData(data, startDate);
+            };
+
+            reader.readAsText(file);
+        });
+
+        function parseCustomDate(dateStr) {
+            const [day, month, year] = dateStr.split('.');
+            const months = {
+                'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+            };
+            return new Date(year, months[month], day);
+        }
+
+        function analyzeData(csvData, startDate) {
+            const rows = csvData.split('\n').map(row => row.split(','));
+            const stateColumnIndex = 3; // Assuming State is at index 3
+            const issueDateColumnIndex = 4; // Assuming Issue-Date is at index 4
+            const dueDateColumnIndex = 5; // Assuming Due-/C.-Date is at index 5
+            const ataColumnIndex = 6; // Assuming ATA column is at index 6
+
+            const tasks = rows.slice(1).map(row => {
+                let date;
+                if (row[stateColumnIndex] === 'Closed') {
+                    date = parseCustomDate(row[dueDateColumnIndex]);
+                } else if (row[stateColumnIndex] === 'Open') {
+                    date = parseCustomDate(row[issueDateColumnIndex]);
+                }
+                return {
+                    date: date,
+                    ata: row[ataColumnIndex] ? row[ataColumnIndex].substring(0, 2) : null // First 2 chars of ATA chapter
+                };
+            });
+
+            // Filter out rows with invalid dates or missing ATAs
+            const validTasks = tasks.filter(task => task.date && task.ata);
+
+            // Sort tasks by date in ascending order
+            validTasks.sort((a, b) => a.date - b.date);
+
+            // Check conditions and proceed with analysis
+            checkConditions(validTasks, startDate);
+
+            // Display ATA chapter summary
+            const ataSummary = countATATasks(validTasks);
+            displayATATable(ataSummary);
+
+            // Display tasks per month
+            const tasksPerMonth = countTasksPerMonth(validTasks);
+            displayTasksChart(tasksPerMonth);
+
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function checkConditions(tasks, startDate) {
+            const sixMonthsLater = new Date(startDate);
+            sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+
+            // Check if tasks span over 6 months
+            const earliestDate = tasks[0].date;
+            const latestDate = tasks[tasks.length - 1].date;
+            const sixMonthCheck = latestDate >= sixMonthsLater;
+
+            document.getElementById('six-month-check').innerHTML = sixMonthCheck ? '<i class="fas fa-check-circle status-icon" style="color:green;"></i> <span>6 months employment condition met</span>' : '<i class="fas fa-times-circle status-icon" style="color:red;"></i> <span>6 months employment condition not met</span>';
+
+            // Check for 100 maintenance days (4+ tasks per day)
+            const maintenanceDays = countMaintenanceDays(tasks);
+            const maintenanceCheck = maintenanceDays >= 100;
+
+            document.getElementById('maintenance-days-check').innerHTML = maintenanceCheck ? '<i class="fas fa-check-circle status-icon" style="color:green;"></i> <span>100 days of maintenance condition met</span>' : `<i class="fas fa-times-circle status-icon" style="color:red;"></i> <span>100 days of maintenance condition not met (found ${maintenanceDays})</span>`;
+
+            // Check for 180 tasks on different dates in 2 years
+            const twoYearsLater = new Date(earliestDate);
+            twoYearsLater.setFullYear(twoYearsLater.getFullYear() + 2);
+            const tasksWithinTwoYears = tasks.filter(task => task.date <= twoYearsLater);
+            const uniqueDatesWithinTwoYears = new Set(tasksWithinTwoYears.map(task => task.date.toDateString())).size;
+            const tasksCheck = uniqueDatesWithinTwoYears >= 180;
+
+            document.getElementById('tasks-check').innerHTML = tasksCheck ? '<i class="fas fa-check-circle status-icon" style="color:green;"></i> <span>180 tasks on different dates condition met</span>' : `<i class="fas fa-times-circle status-icon" style="color:red;"></i> <span>180 tasks condition not met (found ${uniqueDatesWithinTwoYears})</span>`;
+
+            // Check for gaps greater than 30 days
+            const gaps = checkGaps(tasks);
+            const gapsCheck = gaps.every(gap => gap <= 30);
+
+            document.getElementById('gaps-check').innerHTML = gapsCheck ? '<i class="fas fa-check-circle status-icon" style="color:green;"></i> <span>No gaps greater than 30 days</span>' : '<i class="fas fa-info-circle status-icon" style="color:orange;"></i> <span>Gaps greater than 30 days found</span>';
+        }
+
+        function countMaintenanceDays(tasks) {
+            const tasksByDate = {};
+            tasks.forEach(task => {
+                const dateStr = task.date.toDateString();
+                if (!tasksByDate[dateStr]) {
+                    tasksByDate[dateStr] = 0;
+                }
+                tasksByDate[dateStr]++;
+            });
+            return Object.values(tasksByDate).filter(count => count >= 4).length;
+        }
+
+        function checkGaps(tasks) {
+            const gaps = [];
+            for (let i = 1; i < tasks.length; i++) {
+                const gap = (tasks[i].date - tasks[i - 1].date) / (1000 * 60 * 60 * 24); // gap in days
+                gaps.push(gap);
+            }
+            return gaps;
+        }
+
+        function countATATasks(tasks) {
+            const ataCounts = {};
+            tasks.forEach(task => {
+                if (!ataCounts[task.ata]) {
+                    ataCounts[task.ata] = 0;
+                }
+                ataCounts[task.ata]++;
+            });
+
+            // Sort ATA keys by treating them as fixed-length strings by padding to ensure proper ordering
+            const sortedAtaCounts = Object.keys(ataCounts)
+                .sort((a, b) => {
+                    const paddedA = a.padStart(3, '0');
+                    const paddedB = b.padStart(3, '0');
+                    return paddedA.localeCompare(paddedB);
+                })
+                .reduce((acc, key) => {
+                    acc[key] = ataCounts[key];
+                    return acc;
+                }, {});
+
+            return sortedAtaCounts;
+        }
+
+        function displayATATable(ataSummary) {
+            const tbody = document.querySelector('#ata-table tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            // Populate table with sorted ATA chapters
+            for (const [ata, count] of Object.entries(ataSummary)) {
+                const row = document.createElement('tr');
+                const ataCell = document.createElement('td');
+                ataCell.textContent = ata;
+                const countCell = document.createElement('td');
+                countCell.textContent = count;
+                row.appendChild(ataCell);
+                row.appendChild(countCell);
+                tbody.appendChild(row);
+            }
+        }
+
+        function countTasksPerMonth(tasks) {
+            const tasksPerMonth = {};
+            tasks.forEach(task => {
+                const monthYear = `${task.date.getMonth() + 1}-${task.date.getFullYear()}`;
+                if (!tasksPerMonth[monthYear]) {
+                    tasksPerMonth[monthYear] = 0;
+                }
+                tasksPerMonth[monthYear]++;
+            });
+            return tasksPerMonth;
+        }
+
+        function displayTasksChart(tasksPerMonth) {
+            const ctx = document.getElementById('tasks-chart').getContext('2d');
+            const sortedLabels = Object.keys(tasksPerMonth).sort((a, b) => {
+                const [monthA, yearA] = a.split('-').map(Number);
+                const [monthB, yearB] = b.split('-').map(Number);
+                return new Date(yearA, monthA - 1) - new Date(yearB, monthB - 1);
+            });
+            const data = sortedLabels.map(label => tasksPerMonth[label]);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedLabels,
+                    datasets: [{
+                        label: 'Tasks per Month',
+                        data: data,
+                        fill: false,
+                        borderColor: '#007bc7',
+                        pointBackgroundColor: '#ff9f00',
+                        label: 'Tasks per Month',
+                        data: data,
+                        fill: false,
+                        borderColor: '#007bc7',
+                        tension: 0.1
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
